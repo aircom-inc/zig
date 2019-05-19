@@ -18,23 +18,6 @@ const testing = std.testing;
 const is_posix = builtin.os != builtin.Os.windows;
 const is_windows = builtin.os == builtin.Os.windows;
 
-const GetStdIoErrs = os.WindowsGetStdHandleErrs;
-
-pub fn getStdErr() GetStdIoErrs!File {
-    const handle = if (is_windows) try os.windowsGetStdHandle(os.windows.STD_ERROR_HANDLE) else if (is_posix) os.posix.STDERR_FILENO else unreachable;
-    return File.openHandle(handle);
-}
-
-pub fn getStdOut() GetStdIoErrs!File {
-    const handle = if (is_windows) try os.windowsGetStdHandle(os.windows.STD_OUTPUT_HANDLE) else if (is_posix) os.posix.STDOUT_FILENO else unreachable;
-    return File.openHandle(handle);
-}
-
-pub fn getStdIn() GetStdIoErrs!File {
-    const handle = if (is_windows) try os.windowsGetStdHandle(os.windows.STD_INPUT_HANDLE) else if (is_posix) os.posix.STDIN_FILENO else unreachable;
-    return File.openHandle(handle);
-}
-
 pub const SeekableStream = @import("io/seekable_stream.zig").SeekableStream;
 pub const SliceSeekableInStream = @import("io/seekable_stream.zig").SliceSeekableInStream;
 pub const COutStream = @import("io/c_out_stream.zig").COutStream;
@@ -1116,10 +1099,12 @@ pub fn Deserializer(comptime endian: builtin.Endian, comptime packing: Packing, 
         pub const Stream = InStream(Error);
 
         pub fn init(in_stream: *Stream) Self {
-            return Self{ .in_stream = switch (packing) {
-                .Bit => BitInStream(endian, Stream.Error).init(in_stream),
-                .Byte => in_stream,
-            } };
+            return Self{
+                .in_stream = switch (packing) {
+                    .Bit => BitInStream(endian, Stream.Error).init(in_stream),
+                    .Byte => in_stream,
+                },
+            };
         }
 
         pub fn alignToByte(self: *Self) void {
@@ -1325,10 +1310,12 @@ pub fn Serializer(comptime endian: builtin.Endian, comptime packing: Packing, co
         pub const Stream = OutStream(Error);
 
         pub fn init(out_stream: *Stream) Self {
-            return Self{ .out_stream = switch (packing) {
-                .Bit => BitOutStream(endian, Stream.Error).init(out_stream),
-                .Byte => out_stream,
-            } };
+            return Self{
+                .out_stream = switch (packing) {
+                    .Bit => BitOutStream(endian, Stream.Error).init(out_stream),
+                    .Byte => out_stream,
+                },
+            };
         }
 
         /// Flushes any unwritten bits to the stream

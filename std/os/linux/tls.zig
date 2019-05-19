@@ -114,7 +114,7 @@ pub fn setThreadPointer(addr: usize) void {
         .aarch64 => {
             asm volatile (
                 \\ msr tpidr_el0, %[addr]
-                            :
+                :
                 : [addr] "r" (addr)
             );
         },
@@ -126,7 +126,7 @@ pub fn initTLS() void {
     var tls_phdr: ?*elf.Phdr = null;
     var img_base: usize = 0;
 
-    const auxv = std.os.linux_elf_aux_maybe.?;
+    const auxv = std.os.linux.elf_aux_maybe.?;
     var at_phent: usize = undefined;
     var at_phnum: usize = undefined;
     var at_phdr: usize = undefined;
